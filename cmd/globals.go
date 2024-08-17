@@ -155,6 +155,8 @@ type serverCtxt struct {
 	configDirSet, certsDirSet bool
 	Interface                 string
 
+	UcxAddr                   string
+
 	RootUser, RootPwd string
 
 	FTP  []string
@@ -464,6 +466,9 @@ var (
 
 	// Indicates if server was started as `--address ":0"`
 	globalDynamicAPIPort bool
+
+	// UCX stuff
+	globalUcxAddr string
 
 	// Add new variable global values here.
 )

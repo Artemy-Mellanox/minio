@@ -133,6 +133,10 @@ func printServerCommonMsg(apiEndpoints []string) {
 
 	printEventNotifiers()
 	printLambdaTargets()
+
+	if globalUcxAddr != "" {
+		logger.Info(color.Blue("\nUCX: ") + color.Bold(fmt.Sprintf("%s", globalUcxAddr)))
+	}
 }
 
 // Prints startup message for Object API access, prints link to our SDK documentation.

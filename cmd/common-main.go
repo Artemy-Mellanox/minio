@@ -373,6 +373,8 @@ func buildServerCtxt(ctx *cli.Context, ctxt *serverCtxt) (err error) {
 		ctxt.ConsoleAddr = ctx.String("console-address")
 	}
 
+	ctxt.UcxAddr = ctx.String("ucx-address")
+
 	if cxml := ctx.String("crossdomain-xml"); cxml != "" {
 		buf, err := os.ReadFile(cxml)
 		if err != nil {
@@ -499,6 +501,8 @@ func handleCommonArgs(ctxt serverCtxt) {
 	}
 
 	globalMinioAddr = addr
+
+	globalUcxAddr = ctxt.UcxAddr
 
 	// Set all config, certs and CAs directories.
 	var err error

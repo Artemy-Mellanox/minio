@@ -55,6 +55,8 @@ import (
 	"github.com/minio/pkg/v3/env"
 	"golang.org/x/exp/slices"
 	"gopkg.in/yaml.v2"
+
+	uhttp "github.com/openucx/ucx/bindings/go/src/ucx/http"
 )
 
 // ServerFlags - server command specific flags
@@ -192,6 +194,11 @@ var ServerFlags = []cli.Flag{
 		Usage:  "specify the log prefix name for the server log",
 		EnvVar: "MINIO_LOG_PREFIX",
 		Hidden: true,
+	},
+	cli.StringFlag{
+		Name:   "ucx-address",
+		Usage:  "bind to a specific ADDRESS:PORT for UCX",
+		EnvVar: "MINIO_UCX_ADDRESS",
 	},
 }
 
@@ -853,6 +860,29 @@ func serverMain(ctx *cli.Context) {
 	// Initialize grid
 	bootstrapTrace("initGrid", func() {
 		logger.FatalIf(initGlobalGrid(GlobalContext, globalEndpoints), "Unable to configure server grid RPC services")
+	})
+
+	// Configure UCX server.
+	bootstrapTrace("configureUcxServer", func() {
+		if globalUcxAddr == "" {
+			return
+		}
+
+		handler, err := configureServerHandler(globalEndpoints)
+		if err != nil {
+			logger.Fatal(config.ErrUnexpectedError(err), "Unable to configure UCX")
+		}
+
+		handler = setCriticalErrorHandler(corsHandler(handler))
+
+		go func() {
+			serveFn, err := uhttp.StartServer(globalUcxAddr, handler)
+			if err != nil {
+				globalHTTPServerErrorCh <- err
+				return
+			}
+			globalHTTPServerErrorCh <- serveFn()
+		}()
 	})
 
 	// Configure server.
